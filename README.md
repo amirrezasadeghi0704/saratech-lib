@@ -16,7 +16,7 @@ Complete Arduino library for **four-wheel omnidirectional football robots** used
 | **Motion** | `Sina` | Omnidirectional movement with vector control & yaw correction |
 | **Field Mapping** | `Sadra` | Position estimation from 4 distance sensors + coordinate navigation |
 | **Shooting & Aiming** | `Amirreza` | Ball tracking, goal alignment, servo turret, smart shooting state machine |
-| **Return** | `forati` | Navigate back to start position with distance-proportional speed |
+| **Return** | `parsa` | Navigate back to start position with distance-proportional speed |
 
 ### 9 Public APIs
 ```cpp
