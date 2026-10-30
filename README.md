@@ -139,7 +139,7 @@ void setup() {
 }
 
 void loop() {
-    saratechUpdateSensors();  // MUST call every loop
+    aghaparsa();
     
     // 1. amirreza: Basic movement with acceleration
     amirreza.move(10, 90, 0, 5);  // 10 cm/s right, 5 cm/s² accel
@@ -239,7 +239,7 @@ void setup() {
 }
 
 void loop() {
-    saratechUpdateSensors();  // MUST call every loop
+    aghaparsa();  // Updates TDaxis, distances, ball, position
     
     // Basic movement with acceleration
     amirreza.move(10, 90, 0, 5);  // 10 cm/s right, 5 cm/s² accel
@@ -264,13 +264,13 @@ void loop() {
 
 ```cpp
 void loop() {
-    saratechUpdateSensors();  // MUST call every loop
+    aghaparsa();  // Updates TDaxis (yaw + ball)
     
     // Your logic here
 }
 ```
 
-**Reads:** TDAxis12 yaw (I²C), 4 distance sensors, 16-channel TSOP ball, side sensors, updates position.
+**Updates via `aghaparsa()`:** TDaxis12/13 yaw (I²C) + ball (16-channel TSOP).
 
 ---
 
@@ -291,4 +291,4 @@ void loop() {
 
 ---
 
-**Made for IranOpen and RoboCup 2027 Open Weight Football Robotics** ⚽🤖
+**Made for IranOpen 1405 Open Weight Football Robotics** ⚽🤖
