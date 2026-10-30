@@ -291,4 +291,4 @@ void loop() {
 
 ---
 
-**Made for IranOpen 1405 Open Weight Football Robotics** ⚽🤖
+**Made for IranOpen and RoboCup 2027 Open Weight Football Robotics** ⚽🤖
