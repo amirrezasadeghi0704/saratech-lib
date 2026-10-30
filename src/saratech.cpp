@@ -1,46 +1,63 @@
 #include "saratech.h"
 
-// Global instances
-Sina sina;
-Sadra sadra;
-Amirreza amirreza;
-King king;
-MotorDriver motorDriver;
+// ============================================================================
+// GLOBAL INSTANCES (4 Components Only)
+// ============================================================================
+
+// Component 1: TDAxis12 Adapter
+TDAxis12Adapter tdaAxis12(&Wire, 0x10);
+
+// Component 2: GTD35 Adapter
 GTD35Adapter gtd35Adapter;
-TDAxis12Adapter tdaAxis12;
-ServoAdapter servoAdapter;
 
-void saratechBegin(TwoWire* i2cWire, uint8_t tdaAddress) {
-    // Initialize I2C for TDAxis12
+// Component 3: Servo Adapter
+ServoAdapter servoAdapter(PB10);
+
+// Component 4: Spin Back Motor
+SpinBackMotor spinBackMotor(PB11, PB12);
+
+// ============================================================================
+// NEW CLASS INSTANCES
+// ============================================================================
+
+amirreza_class amirreza;
+sina_class sina;
+sadra_class sadra;
+king_forati_class king;
+sina_rotation_class sina_rotation;
+
+// ============================================================================
+// INITIALIZATION FUNCTIONS
+// ============================================================================
+
+void saratechBeginGTD35(TwoWire* i2cWire, uint8_t tdaAddress,
+                        HardwareSerial& serialPort,
+                        int8_t directionPin, uint8_t txLevel,
+                        uint32_t baud) {
+    // Initialize TDAxis12 (I2C)
     tdaAxis12.begin(i2cWire, tdaAddress);
 
-    // Initialize motor driver (PWM mode - default)
-    motorDriver.begin();
-    sina.begin(&motorDriver);
-}
-
-// Alternative initialization for GTD35 UART mode
-void saratechBeginGTD35(TwoWire* i2cWire, uint8_t tdaAddress, HardwareSerial& serialPort, int8_t directionPin = -1, uint8_t txLevel = HIGH, uint32_t baud = 115200) {
-    // Initialize I2C for TDAxis12
-    tdaAxis12.begin(i2cWire, tdaAddress);
-
-    // Initialize GTD35 motor driver (UART mode)
+    // Initialize GTD35 (UART)
     gtd35Adapter.begin(serialPort, baud, directionPin, txLevel);
-    sina.begin(&gtd35Adapter);
 
-    // Initialize servo (PB10)
+    // Initialize Servo
     servoAdapter.begin();
-    amirreza.begin(&sina, &servoAdapter);
-    king.begin(&sina);
 
-    // Initialize Sadra
+    // Initialize Spin Back Motor
+    spinBackMotor.begin();
+
+    // Initialize new classes
+    amirreza.begin();
+    sina.begin(&gtd35Adapter, &spinBackMotor);
     sadra.begin(&sina);
+    king.begin(&sina);
+    sina_rotation.begin(&sina, &servoAdapter);
 
     // Initialize shooter (PC13 command, PA4 feedback)
-    amirreza.shoot(PC13, PA4);
+    // Note: Uncomment and configure pins as needed
+    // amirreza.shoot(PC13, PA4);
 
     // Read distance sensor baselines (average 10 samples each)
-    // This matches the original sketch initialization
     int kf_sum = 0, kr_sum = 0, kb_sum = 0, kl_sum = 0;
     for (int i = 0; i < 10; i++) {
         kf_sum += analogRead(PA5);
@@ -63,7 +80,7 @@ void saratechBeginGTD35(TwoWire* i2cWire, uint8_t tdaAddress, HardwareSerial& se
     pinMode(PC15, OUTPUT);
 }
 
-// Helper function to read all sensors (call in main loop)
+// Update all sensors (call in main loop)
 void saratechUpdateSensors() {
     RobotState& state = RobotState::instance();
 
@@ -112,4 +129,18 @@ void saratechUpdateSensors() {
 
     // Update position estimate using Sadra's mapcalc
     sadra.mapcalc(state.distBack, state.distFront, state.distLeft, state.distRight);
+}
+
+namespace saratech {
+    float normalizeAngle(float angle) {
+        while (angle > 180.0f) angle -= 360.0f;
+        while (angle < -180.0f) angle += 360.0f;
+        return angle;
+    }
+    float rad(float deg) { return deg * PI / 180.0f; }
+    float deg(float rad) { return rad * 180.0f / PI; }
+    template<typename T>
+    T clamp(T val, T minVal, T maxVal) {
+        return val < minVal ? minVal : (val > maxVal ? maxVal : val);
+    }
 }

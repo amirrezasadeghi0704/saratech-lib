@@ -1,11 +1,24 @@
-# SARATECH Arduino Robotics Library
+# SARATECH Arduino Robotics Library v2.0.0
 
 [![Arduino Library](https://img.shields.io/badge/Arduino-Library-blue.svg)](https://www.arduino.cc/en/Reference/Libraries)
 [![Platform](https://img.shields.io/badge/Platform-STM32-red.svg)](https://github.com/stm32duino/Arduino_Core_STM32)
+[![Version](https://img.shields.io/badge/Version-2.0.0-orange.svg)]()
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-1.0.0-orange.svg)]()
 
-Complete Arduino library for **four-wheel omnidirectional football robots** used in IranOpen Secondary competitions. Provides high-level robot control interfaces for movement, field mapping, ball detection, goal alignment, shooting, and navigation.
+Complete Arduino library for **Open Weight league soccer robots**. Preserves all TDaxis12 and GTD35 commands while adding new consolidated classes with simplified naming.
+
+---
+
+## 🎯 Version 2.0.0 - What's New
+
+| Feature | Description |
+|---------|-------------|
+| **Version** | 2.0.0 (Open Weight League) |
+| **Wheel Radius** | Fixed at 5 cm for all robots |
+| **Components** | Only 4 allowed: Spin Back Motor, GTD35, TDAxis, Servo |
+| **All TDaxis12 commands** | ✅ Preserved |
+| **All GTD35 commands** | ✅ Preserved |
+| **New Classes** | `amirreza_class`, `sina_class`, `sadra_class`, `king.forati_class`, `sina_rotation_class` |
 
 ---
 
@@ -13,70 +26,41 @@ Complete Arduino library for **four-wheel omnidirectional football robots** used
 
 | Module | Class | Description |
 |--------|-------|-------------|
-| **Motion** | `Sina` | Omnidirectional movement with vector control & yaw correction |
-| **Field Mapping** | `Sadra` | Position estimation from 4 distance sensors + coordinate navigation |
-| **Shooting & Aiming** | `Amirreza` | Ball tracking, goal alignment, servo turret, smart shooting state machine |
-| **Return** | `King` | Navigate back to start position with distance-proportional speed |
-
-### 9 Public APIs
-```cpp
-// Motion
-sina.motor(speed, x, y, tdaxisGain, acceleration);
-
-// Field mapping & navigation
-sadra.mapcalc(rear, front, left, right);
-sadra.move(targetX, targetY, maxSpeed);
-
-// Ball & goal alignment
-amirreza.clapm(maxRotation, robotX, robotY, ballX, ballY);
-amirreza.clapmshoot(robotX, robotY, goalX, goalY);
-
-// Servo turret aiming
-amirreza.shootclamp();
-
-// Smart combined shooting
-amirreza.smshoot(approachSpeed, minGoalDist, maxRobotYaw, maxServoYaw);
-
-// Return to start
-king.forati(maxSpeed, targetX, targetY);
-```
+| **TDAxis Coefficient** | `amirreza_class` | Receive TDaxis coefficient for all movement functions |
+| **Vector Control** | `sina_class` | cm/s vector control with acceleration (3 inputs: speed, x, y) + acceleration (1 input) |
+| **Go-to-Point** | `sadra_class` | Move to field coordinates in cm/s (3 inputs: targetX, targetY, speed) |
+| **Return to Start** | `king.forati_class` | Return to start position (3 inputs: speed, xtarg, ytarg) |
+| **Rotation + Servo** | `sina_rotation_class` | Manual gyro addition + servo control (2 inputs) |
 
 ---
 
 ## 🔧 Hardware Requirements
 
-| Component | Specification | Pins |
-|-----------|--------------|------|
+| Component | Specification | Notes |
+|-----------|--------------|-------|
 | **MCU** | STM32F103C8T6 (Blue Pill) | — |
-| **Motors** | 4× GTD35 (UART/RS485 only) | Serial1/2/3 (TX/RX + optional DE pin) |
+| **Motors** | 4× GTD35 (UART/RS485) | Serial1/2/3 only |
 | **IMU** | TDAxis12 (I²C @ 0x10) | I2C2: PB10(SCL), PB11(SDA) |
-| **Distance Sensors** | 4× Analog (field lines) | Front: PA5, Right: PA6, Back: PA7, Left: PB0 |
-| **Ball Sensor** | 16-ch TSOP array | PA0 + PA8, PB1, PC14, PC15 (selectors) |
-| **Shooter** | Solenoid/Trigger | Cmd: PC13 (HIGH), Feedback: PA4 (LOW=ready) |
+| **Distance Sensors** | 4× Analog | Front: PA5, Right: PA6, Back: PA7, Left: PB0 |
+| **Ball Sensor** | 16-ch TSOP array | PA0 + PA8, PB1, PC14, PC15 |
+| **Shooter** | Solenoid/Trigger | Cmd: PC13 (HIGH), FB: PA4 (LOW=ready) |
 | **Servo** | Turret (45°–135°) | PB10 |
+| **Spin Back Motor** | Kickback motor | PB11 (PWM), PB12 (DIR) |
 
-> **⚠️ The GTD35 motors operate ONLY via UART/RS485 protocol (115200 baud). There is no PWM mode. The library uses the native GTD35 UART implementation.**
+> **⚠️ GTD35 motors operate ONLY via UART/RS485 (115200 baud). No PWM mode supported.**
 
 ---
 
 ## 📦 Installation
 
 ### Arduino IDE
-1. Download this repository as ZIP
+1. Download as ZIP
 2. **Sketch → Include Library → Add .ZIP Library**
-3. Select `saratech-main.zip`
-4. Restart Arduino IDE
+3. Select `saratech.zip`
 
 ### Manual
 ```bash
-# Copy to Arduino libraries folder
 cp -r saratech ~/Documents/Arduino/libraries/
-```
-
-### PlatformIO
-```ini
-lib_deps = 
-    https://github.com/amirrezasadeghi0704/saratech-lib.git
 ```
 
 ---
@@ -90,21 +74,31 @@ TwoWire i2c2(2);
 
 void setup() {
     Serial.begin(115200);
-    // Initialize with GTD35 UART on Serial1, no direction pin, 115200 baud
+    
+    // Initialize with GTD35 UART on Serial1
     saratechBeginGTD35(&i2c2, 0x10, Serial1, -1, HIGH, 115200);
 }
 
 void loop() {
-    saratechUpdateSensors();     // MUST call every loop iteration
+    saratechUpdateSensors();  // MUST call every loop
     
-    // Move right at 10 cm/s
-    sina.motor(10, 90, 0, 200, 0);
+    // 1. sina_class: Vector control with cm/s + acceleration
+    sina.motor(10, 90, 0, 200, 5);  // 10 cm/s right, accel 5 cm/s²
     
-    // Move to field coordinates (90, 120) at 15 cm/s
-    sadra.move(90, 120, 15);
+    // 2. sadra_class: Go to point (3 inputs)
+    sadra.move(90, 120, 15);  // Go to (90,120) at 15 cm/s
     
-    // Align to opponent goal and shoot
-    amirreza.clapmshoot(robotX, robotY, 90, 240);
+    // 3. king.forati_class: Return to start (3 inputs)
+    king.forati(15, 0, 0);  // Return to origin at 15 cm/s
+    
+    // 4. amirreza_class: Set TDaxis gain for all movement
+    amirreza.setTdaxisGain(250);  // Custom gain
+    
+    // 5. sina_rotation_class: Manual gyro + servo
+    sina_rotation.rotate(5.0, 45);  // Add 5° to gyro, servo to 45°
+    
+    // 0. amirreza_class: Set TDaxis gain (applies to ALL movement)
+    amirreza.setTdaxisGain(200);  // Default 200
 }
 ```
 
@@ -112,138 +106,164 @@ void loop() {
 
 ## 📚 API Reference
 
-### `Sina` — Omnidirectional Motion
+### 0. `amirreza_class` — TDAxis Coefficient Receiver
 ```cpp
-void motor(float speed, float x, float y, float tdaxisGain=200, float acceleration=0);
+void setTdaxisGain(float gain);      // Set gain for ALL movement functions
+float getTdaxisGain() const;
+void enableYawCorrection(bool enable);
+bool isYawCorrectionEnabled() const;
+```
+**Purpose:** Receives TDaxis coefficient applied to ALL movement functions to prevent unwanted yaw rotation during movement.
+
+---
+
+### 1. `sina_class` — Vector Control (3+1 inputs)
+```cpp
+void motor(float speed_cm_s, float x, float y,
+           float tdaxisGain = 200.0f, float acceleration_cm_s2 = 0.0f);
 void stop();
 void getVelocity(float& vx, float& vy);
 bool isMoving();
 ```
 | Parameter | Unit | Description |
 |-----------|------|-------------|
-| `speed` | cm/s | Linear speed (max 30) |
-| `x, y` | — | Direction vector components |
+| `speed_cm_s` | cm/s | Linear speed (max 30) |
+| `x, y` | — | Direction vector (normalized internally) |
 | `tdaxisGain` | — | Yaw gain multiplier (200=default, 0=disabled) |
-| `acceleration` | cm/s² | Accel limit (0=unlimited) |
+| `acceleration_cm_s2` | cm/s² | Acceleration limit (0=unlimited) |
 
-**Example:** `sina.motor(10, 90, 0, 200, 0)` → move right at 10 cm/s
+**Example:**
+```cpp
+sina.motor(10, 90, 0, 200, 5);   // Move right at 10 cm/s, 5 cm/s² accel
+sina.motor(20, 0, 100, 0, 0);    // Move forward at 20 cm/s, no yaw correction
+```
 
 ---
 
-### `Sadra` — Field Mapping & Navigation
+### 2. `sadra_class` — Go to Point (3 inputs)
 ```cpp
-void mapcalc(float rear, float front, float left, float right);
-bool move(int targetX, int targetY, int maxSpeed);
+bool move(int targetX_cm, int targetY_cm, int speed_cm_s);
 bool isMoving();
 float distanceToTarget();
 void stop();
 ```
-- **Field**: 180×240 cm, origin at our goal bottom-left (0,0)
-- **Arrival tolerance**: 5 cm
+| Parameter | Unit | Description |
+|-----------|------|-------------|
+| `targetX_cm` | cm | Target X position (field coords) |
+| `targetY_cm` | cm | Target Y position (field coords) |
+| `speed_cm_s` | cm/s | Max approach speed |
 
----
+**Returns:** `true` when target reached (within 5cm tolerance)
 
-### `Amirreza` — Shooting & Aiming
+**Example:**
 ```cpp
-void shoot(uint8_t cmdPin, uint8_t fbPin);           // Initialize shooter
-void clapm(float maxRot, float rx, float ry, float bx, float by);  // Face ball
-void clapmshoot(float rx, float ry, float gx, float gy);           // Face goal & shoot
-void shootclamp();                                    // Servo aim + fixed yaw
-void smshoot(int speed, int n, int i, int z);        // Smart shoot sequence
-bool checkBallReady();
-const char* getShooterStateStr();
-void resetSmshoot();
+sadra.move(90, 120, 15);  // Go to field center at 15 cm/s
+if (sadra.move(0, 0, 10)) { /* arrived at origin */ }
 ```
-| `smshoot` Param | Meaning |
-|----------------|---------|
-| `speed` | Approach speed (cm/s) |
-| `n` | Min distance from goal (cm) |
-| `i` | Max robot yaw rotation (°) |
-| `z` | Max servo rotation from center (°) |
 
 ---
 
-### `King` — Return to Start
+### 3. `king.forati_class` — Return to Start (3 inputs)
 ```cpp
-void forati(int maxSpeed, int targetX, int targetY);
+void forati(int speed_cm_s, int xtarg_cm, int ytarg_cm);
 bool isReturning();
 bool atTarget();
 float distanceToTarget(int x, int y);
 void stop();
 ```
-- Uses distance-proportional speed: `v = min(v_max, k*d)`
+| Parameter | Unit | Description |
+|-----------|------|-------------|
+| `speed_cm_s` | cm/s | Max return speed |
+| `xtarg_cm` | cm | Target X (field coords) |
+| `ytarg_cm` | cm | Target Y (field coords) |
+
+**Uses distance-proportional speed:** `v = min(v_max, k*d)` for smooth deceleration.
 
 ---
 
-### Library Initialization
+### 4. `sina_rotation_class` — Rotation + Servo (2 inputs)
 ```cpp
-// GTD35 UART mode (native - only supported mode)
-void saratechBeginGTD35(TwoWire* i2cWire, uint8_t tdaAddress,
-                        HardwareSerial& serialPort,
-                        int8_t directionPin = -1,
-                        uint8_t txLevel = HIGH,
-                        uint32_t baud = 115200);
+void rotate(float manual_gyro_addition, float servo_angle);
+void stop();
+```
+| Parameter | Unit | Description |
+|-----------|------|-------------|
+| `manual_gyro_addition` | degrees | Added to current gyro before coefficient multiplication |
+| `servo_angle` | degrees | Servo turret angle (relative to center 90°) |
 
-// Sensor update (call every loop)
-void saratechUpdateSensors();
+**Example:**
+```cpp
+sina_rotation.rotate(5.0, 45);   // Add 5° to gyro reading, point servo to 45°
+sina_rotation.rotate(-10, 135);  // Subtract 10°, point servo to max right
 ```
 
 ---
 
-## 🤖 Sensor Update Loop
+### Preserved Original Classes (All TDaxis/GTD35 Commands)
 
-**Critical:** Call `saratechUpdateSensors()` once per `loop()` iteration:
+All original TDaxis12 and GTD35 commands remain available:
+
+| Original Class | Key Methods |
+|----------------|-------------|
+| `Sina` | `motor()`, `stop()`, `getVelocity()` |
+| `Sadra` | `mapcalc()`, `move()`, `isMoving()` |
+| `Amirreza` | `clapm()`, `clapmshoot()`, `smshoot()`, `shootclamp()` |
+| `King` | `forati()`, `isReturning()`, `atTarget()` |
+| `TDAxis12Adapter` | `read()`, `getBallData()`, `isBallDetected()` |
+| `GTD35Adapter` | `motor()`, `setMotorRaw()`, `stop()` |
+| `ServoAdapter` | `setAngle()`, `setOffset()`, `getAngle()` |
+
+---
+
+### Sensor Update (Required Every Loop)
+
 ```cpp
 void loop() {
-    saratechUpdateSensors();  // Updates yaw, distances, ball, position
+    saratechUpdateSensors();  // Updates: yaw, distances, ball, position
     
-    // Your robot logic here
+    // Your logic here
 }
 ```
 
-This reads:
-- TDAxis12 yaw (I²C)
-- 4 distance sensors (analog, calibrated at startup)
-- 16-channel TSOP ball sensor
-- Side sensors for yaw offset (`dgy`)
-- Updates position estimate via `Sadra`
+**Reads:** TDAxis12 yaw (I²C), 4 distance sensors, 16-channel TSOP ball, side sensors, updates position via Sadra.
 
 ---
 
-## 📂 Examples
-
-| Example | Description |
-|---------|-------------|
-| `BasicMovement` | Vector-based motion in all directions |
-| `FieldMapping` | Position estimation & coordinate movement |
-| `GoalAlignment` | Ball tracking & goal-facing rotation |
-| `Shooting` | All shooting modes (direct, servo, smart) |
-| `FullMatch` | Complete match state machine |
-
-Open via **File → Examples → SARATECH**
-
----
-
-## ⚙️ Configuration
-
-Adjust in `RobotState::Config` (via `RobotState::instance().config`):
+## 🔧 Configuration
 
 ```cpp
-config.maxSpeedCmS = 30.0f;        // Max linear speed
-config.maxMotorCmd = 32767;        // Max command (GTD35 UART mode, int16_t)
-config.yawGainBase = 300.0f;       // Yaw correction gain (motor units/°)
-config.fieldWidth = 180.0f;        // Field X (cm)
-config.fieldLength = 240.0f;       // Field Y (cm)
-config.arrivalTolerance = 5.0f;    // Target arrival (cm)
-config.shootAlignmentTol = 3.0f;   // Shooting yaw tolerance (°)
-config.servoMin = 45.0f;           // Servo mechanical limits
-config.servoMax = 135.0f;
-config.servoCenter = 90.0f;
+RobotState& state = RobotState::instance();
+
+// Motor
+state.config.maxSpeedCmS = 30.0f;
+state.config.maxMotorCmd = 32767;  // GTD35 UART mode
+state.config.yawGainBase = 300.0f;
+
+// Field (cm)
+state.config.fieldWidth = 180.0f;
+state.config.fieldLength = 240.0f;
+state.config.arrivalTolerance = 5.0f;
+
+// Servo
+state.config.servoMin = 45.0f;
+state.config.servoMax = 135.0f;
+state.config.servoCenter = 90.0f;
+
+// Wheel radius: FIXED at 5 cm
+#define WHEEL_RADIUS_CM 5.0f
 ```
 
 ---
 
-## 🏗️ Architecture
+## 📦 Installation
+
+1. Download as ZIP
+2. Arduino IDE: **Sketch → Include Library → Add .ZIP Library**
+3. Select `saratech.zip`
+
+---
+
+## 🏗️ Architecture (4 Components Only)
 
 ```
 ┌─────────────────────────────────────┐
@@ -254,30 +274,24 @@ config.servoCenter = 90.0f;
                │
     ┌──────────┼──────────┬───────────┐
     ▼          ▼          ▼           ▼
-┌───────┐ ┌────────┐ ┌──────────┐ ┌────────┐
-│ Sina  │ │ Sadra  │ │ Amirreza │ │ King   │
-│motion │ │map/nav │ │ shoot/aim│ │ return │
-└───┬───┘ └────┬───┘ └────┬─────┘ └────┬───┘
-    │          │          │           │
-    ▼          ▼          ▼           ▼
-┌─────────────────────────────────────┐
-│        Hardware Adapters            │
-│ GTD35Adapter │ TDAxis12Adapter │ ServoAdapter │
-└─────────────────────────────────────┘
+┌───────────┐ ┌─────────┐ ┌──────────┐ ┌─────────────┐
+│ amirreza_ │ │ sina_   │ │ sadra_   │ │ king.forati │
+│ class     │ │ class   │ │ class    │ │ _class      │
+└─────┬─────┘ └────┬────┘ └────┬─────┘ └─────┬──────┘
+      │            │           │            │
+      └────────────┼───────────┼───────────┘
+                   ▼
+        ┌───────────────────┐
+        │   sina_class      │
+        │  (core motion)    │
+        └────────┬──────────┘
+                 ▼
+    ┌─────────────────────────────┐
+    │      Hardware (4 only)      │
+    │ SpinBack | GTD35 | TDAxis   │
+    │              Servo          │
+    └─────────────────────────────┘
 ```
-
-### Motor Control (GTD35 UART Only)
-| Mode | Class | Transport | Max Command | Protocol |
-|------|-------|-----------|-------------|----------|
-| **UART** | `GTD35Adapter` | Serial/RS485 | 32767 | Native GTD35 |
-
-**Protocol Details:**
-- Frame: `0xAA 0xAA | len=4 | 4 motor IDs | per-motor: control(1B) + speed(2B) + angle(2B) | XOR checksum`
-- Motor order: L1, L2, R2, R1 (ML1, ML2, MR2, MR1)
-- Speed: int16_t (-32768 to 32767) representing RPM
-- Angle: uint16_t (default 4000)
-- Control byte: enable(0x0F) | resetEncoder(0xF0)
-- Baud: 115200 default
 
 ---
 
@@ -285,27 +299,6 @@ config.servoCenter = 90.0f;
 
 MIT License - see [LICENSE](LICENSE) for details.
 
-Based on:
-- [TDAxis12](https://github.com/fdmxfarhan/TDAxis12) by fdmxfarhan
-- [GTD35](https://github.com/fdmxfarhan/GTD35) by fdmxfarhan
-
 ---
 
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Open Pull Request
-
----
-
-## 📞 Support
-
-- **Issues**: [GitHub Issues](https://github.com/amirrezasadeghi0704/saratech-lib/issues)
-- **IranOpen Secondary**: Student football robotics competition
-
----
-
-**Made for IranOpen 1405 Secondary Football Robotics** ⚽🤖
+**Made for IranOpen 1405 Open Weight Football Robotics** ⚽🤖
