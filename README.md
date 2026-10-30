@@ -13,7 +13,7 @@ Complete Arduino library for **Open Weight league soccer robots**. Preserves all
 |---------|-------------|
 | **Version** | 2.0.0 (Open Weight League) |
 | **Wheel Radius** | Fixed at 5 cm for all robots |
-| **Components** | Only 4 allowed: Spin Back Motor, GTD35, TDAxis, Servo |
+| **Components** | Spin Back Motor PWM, GTD35, TDAxis, Servo |
 | **All TDaxis12 commands** | ✅ Preserved |
 | **All GTD35 commands** | ✅ Preserved |
 | **New Classes** | `amirreza_class`, `sina_class`, `sadra_class`, `king.forati_class`, `sina_rotation_class` |
