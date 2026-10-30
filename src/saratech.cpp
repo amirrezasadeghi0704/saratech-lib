@@ -51,11 +51,6 @@ void saratechBeginGTD35(TwoWire* i2cWire, uint8_t tdaAddress,
     sadra.begin(&amirreza);
     king.begin(&amirreza);
 
-    // Initialize TSOP channel selector pins (part of TDAxis hardware)
-    pinMode(PA8, OUTPUT);
-    pinMode(PB1, OUTPUT);
-    pinMode(PC14, OUTPUT);
-    pinMode(PC15, OUTPUT);
 }
 
 // Update sensors from 4 allowed hardware only: TDAxis (yaw + ball)
