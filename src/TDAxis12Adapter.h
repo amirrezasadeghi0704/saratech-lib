@@ -82,51 +82,6 @@ public:
         return true;
     }
 
-    // Check if ball detected (matches original is_ball logic)
-    bool isBallDetected() {
-        uint8_t sensors[16];
-        if (!readSensors(sensors)) return false;
-
-        float sumx = 0, sumy = 0;
-            float sensorAngle = radians(i * 22.5f);
-            float value = 4095.0f - sensors[i];  // Inverted reading
-            sumx += value * cos(sensorAngle);
-            sumy += value * sin(sensorAngle);
-     
-
-        float ballAngle = degrees(atan2(sumy, sumx));
-        float ballDistance = sqrt(sumx * sumx + sumy * sumy);
-
-        // Original threshold: balldistance > 2000
-        return ballDistance > 2000.0f;
-    }
-
-    // Get full ball data
-    bool getBallData(float& outAngle, float& outDistance) {
-        uint8_t sensors[16];
-        if (!readSensors(sensors)) return false;
-
-        float sumx = 0, sumy = 0;
-        for (int i = 0; i < 16; i++) {
-            float sensorAngle = radians(i * 22.5f);
-            float value = 4095.0f - sensors[i];
-            sumx += value * cos(sensorAngle);
-            sumy += value * sin(sensorAngle);
-        }
-
-        outAngle = degrees(atan2(sumy, sumx));
-        outDistance = sqrt(sumx * sumx + sumy * sumy);
-
-        // Normalize angle
-        if (outAngle > 180.0f) outAngle -= 360.0f;
-        if (outAngle < -180.0f) outAngle += 360.0f;
-
-        return true;
-    }
-
-    bool isInitialized() const { return _initialized; }
-    uint8_t getAddress() const { return _address; }
-
 private:
     TwoWire* _wire;
     uint8_t _address;
