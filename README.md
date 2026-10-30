@@ -1,10 +1,9 @@
 # SARATECH Arduino Robotics Library v2.0.0
 
 [![Arduino Library](https://img.shields.io/badge/Arduino-Library-blue.svg)](https://www.arduino.cc/en/Reference/Libraries)
-[![Platform](https://img.shields.io/badge/Platform-STM32-red.svg)](https://github.com/stm32duino/Arduino_Core_STM32)
 [![Version](https://img.shields.io/badge/Version-2.0.0-orange.svg)]()
 
-Complete Arduino library for **Open Weight league soccer robots**. Preserves all TDaxis12 and GTD35 commands while adding new consolidated classes with simplified naming.
+Complete Arduino library for **Open Weight league soccer robots**. Preserves all TDaxis12 or 13 and GTD35 commands while adding new consolidated classes with simplified naming.
 
 ---
 
@@ -14,7 +13,7 @@ Complete Arduino library for **Open Weight league soccer robots**. Preserves all
 |---------|-------------|
 | **Version** | 2.0.0 (Open Weight League) |
 | **Wheel Radius** | Fixed at 5 cm for all robots |
-| **Components** | Only 4 allowed: Spin Back Motor, GTD35, TDAxis, Servo |
+| **Components** | Spin Back Motor PWM, GTD35, TDAxis, Servo |
 | **All TDaxis12 commands** | ✅ Preserved |
 | **All GTD35 commands** | ✅ Preserved |
 | **New Classes** | `amirreza_class`, `sina_class`, `sadra_class`, `king.forati_class`, `sina_rotation_class` |
@@ -28,7 +27,7 @@ Complete Arduino library for **Open Weight league soccer robots**. Preserves all
 | **TDAxis Coefficient** | `amirreza_class` | Receive TDaxis coefficient for all movement functions |
 | **Vector Control** | `sina_class` | cm/s vector control with acceleration (3 inputs: speed, x, y) + acceleration (1 input) |
 | **Go-to-Point** | `sadra_class` | Move to field coordinates in cm/s (3 inputs: targetX, targetY, speed) |
-| **Return to Start** | `king.forati_class` | Return to start position (3 inputs: speed, xtarg, ytarg) |
+| **Return to Start** | `forati_class` | Return to start position (3 inputs: speed, xtarg, ytarg) |
 | **Rotation + Servo** | `sina_rotation_class` | Manual gyro addition + servo control (2 inputs) |
 
 ---
@@ -51,25 +50,8 @@ All TDaxis12 and GTD35 commands are preserved from the original libraries:
 | **TDAxis Coefficient** | `amirreza_class` | Receive TDaxis coefficient for all movement functions |
 | **Vector Control** | `sina_class` | cm/s vector control with acceleration (3 inputs: speed, x, y) + acceleration (1 input) |
 | **Go-to-Point** | `sadra_class` | Move to field coordinates in cm/s (3 inputs: targetX, targetY, speed) |
-| **Return to Start** | `king.forati_class` | Return to start position (3 inputs: speed, xtarg, ytarg) |
+| **Return to Start** | `forati_class` | Return to start position (3 inputs: speed, xtarg, ytarg) |
 | **Rotation + Servo** | `sina_rotation_class` | Manual gyro addition + servo control (2 inputs) |
-
----
-
-## 🔧 Hardware Requirements
-
-| Component | Specification | Notes |
-|-----------|--------------|-------|
-| **MCU** | STM32F103C8T6 (Blue Pill) | — |
-| **Motors** | 4× GTD35 (UART/RS485) | Serial1/2/3 only |
-| **IMU** | TDAxis12 (I²C @ 0x10) | I2C2: PB10(SCL), PB11(SDA) |
-| **Distance Sensors** | 4× Analog | Front: PA5, Right: PA6, Back: PA7, Left: PB0 |
-| **Ball Sensor** | 16-ch TSOP array | PA0 + PA8, PB1, PC14, PC15 |
-| **Shooter** | Solenoid/Trigger | Cmd: PC13 (HIGH), FB: PA4 (LOW=ready) |
-| **Servo** | Turret (45°–135°) | PB10 |
-| **Spin Back Motor** | Kickback motor | PB11 (PWM), PB12 (DIR) |
-
-> **⚠️ GTD35 motors operate ONLY via UART/RS485 (115200 baud). No PWM mode supported.**
 
 ---
 
@@ -185,7 +167,7 @@ if (sadra.move(0, 0, 10)) { /* arrived at origin */ }
 
 ---
 
-### 3. `king.forati_class` — Return to Start (3 inputs)
+### 3. `forati_class` — Return to Start (3 inputs)
 ```cpp
 void forati(int speed_cm_s, int xtarg_cm, int ytarg_cm);
 bool isReturning();
@@ -289,7 +271,7 @@ state.config.servoCenter = 90.0f;
     ┌──────────┼──────────┬───────────┐
     ▼          ▼          ▼           ▼
 ┌───────────┐ ┌─────────┐ ┌──────────┐ ┌─────────────┐
-│ amirreza_ │ │ sina_   │ │ sadra_   │ │ king.forati │
+│ amirreza_ │ │ sina_   │ │ sadra_   │ │ forati │
 │ class     │ │ class   │ │ class    │ │ _class      │
 └─────┬─────┘ └────┬────┘ └────┬─────┘ └─────┬──────┘
       │            │           │            │
