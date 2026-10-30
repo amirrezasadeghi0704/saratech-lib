@@ -1,4 +1,4 @@
-# SARATECH Arduino Robotics Library v2.0.0
+# SARATECH Arduino Robotics Library v1.4.7
 
 [![Arduino Library](https://img.shields.io/badge/Arduino-Library-blue.svg)](https://www.arduino.cc/en/Reference/Libraries)
 [![Version](https://img.shields.io/badge/Version-2.0.0-orange.svg)]()
@@ -6,8 +6,6 @@
 Complete Arduino library for **Open Weight league soccer robots**. Preserves all TDaxis12 and GTD35 commands while adding new consolidated classes with clear role separation.
 
 ---
-
-## 🎯 Version 2.0.0 - What's New
 
 | Feature | Description |
 |---------|-------------|
@@ -36,7 +34,7 @@ All TDaxis12/13 and GTD35 commands are preserved from the original libraries:
 | Class | Role | Key Methods |
 |-------|------|-------------|
 | **amirreza_class** | **Gyro coefficient + Basic movement** (accel, speed, velocity vector) | `move(speed, x, y, accel)`, `setTdaxisGain()`, `stop()` |
-| **sina_class** | **Rotation (چرخش)** with manual gyro addition + servo | `rotate(manual_gyro_add, servo_angle)`, `stop()` |
+| **sina_class** | **Rotation** with manual gyro addition + servo | `rotate(manual_gyro_add, servo_angle)`, `stop()` |
 | **sadra_class** | **Go to position** (targetX, targetY, speed) | `move(targetX, targetY, speed)`, `stop()` |
 | **king.forati_class** | **Return to start position** (speed, xtarg, ytarg) | `forati(speed, xtarg, ytarg)`, `stop()` |
 
@@ -78,7 +76,7 @@ amirreza.stop();
 
 ---
 
-### 2. `sina_class` — Rotation (چرخش) + Servo
+### 2. `sina_class` — Rotation + Servo
 ```cpp
 sina.begin(&gtd35Adapter, &servoAdapter);
 
@@ -270,7 +268,7 @@ void loop() {
 }
 ```
 
-**Updates via `aghaparsa()`:** TDaxis12/13 yaw (I²C) + ball (16-channel TSOP).
+**Updates via `aghaparsa()`:** TDaxis12/13 yaw (I²C).
 
 ---
 
@@ -291,4 +289,4 @@ void loop() {
 
 ---
 
-**Made for IranOpen 1405 Open Weight Football Robotics** ⚽🤖
+**Made for IranOpen and RoboCup Open Weight Football Robotics** ⚽🤖
