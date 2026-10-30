@@ -64,9 +64,6 @@ public:
         return yaw;
     }
 
-    // Read raw sensor data (16 channels)
-    // Original TDAxis12 has sensors[16] array
-    bool readSensors(uint8_t (&sensors)[16]) {
         if (!_initialized) return false;
 
         _wire->beginTransmission(_address);
@@ -82,11 +79,6 @@ public:
 
         if (count < 18) return false;
 
-        // Bytes 2-17 contain sensor data (16 bytes)
-        for (int i = 0; i < 16; i++) {
-            sensors[i] = data[2 + i];
-        }
-
         return true;
     }
 
@@ -95,14 +87,12 @@ public:
         uint8_t sensors[16];
         if (!readSensors(sensors)) return false;
 
-        // Original calculation from Secondry_ST_02.ino
         float sumx = 0, sumy = 0;
-        for (int i = 0; i < 16; i++) {
             float sensorAngle = radians(i * 22.5f);
             float value = 4095.0f - sensors[i];  // Inverted reading
             sumx += value * cos(sensorAngle);
             sumy += value * sin(sensorAngle);
-        }
+     
 
         float ballAngle = degrees(atan2(sumy, sumx));
         float ballDistance = sqrt(sumx * sumx + sumy * sumy);
