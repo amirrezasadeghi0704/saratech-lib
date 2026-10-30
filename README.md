@@ -1,9 +1,7 @@
 # SARATECH Arduino Robotics Library v2.0.0
 
 [![Arduino Library](https://img.shields.io/badge/Arduino-Library-blue.svg)](https://www.arduino.cc/en/Reference/Libraries)
-[![Platform](https://img.shields.io/badge/Platform-STM32-red.svg)](https://github.com/stm32duino/Arduino_Core_STM32)
 [![Version](https://img.shields.io/badge/Version-2.0.0-orange.svg)]()
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 Complete Arduino library for **Open Weight league soccer robots**. Preserves all TDaxis12 and GTD35 commands while adding new consolidated classes with simplified naming.
 
@@ -292,12 +290,6 @@ state.config.servoCenter = 90.0f;
     │              Servo          │
     └─────────────────────────────┘
 ```
-
----
-
-## 📄 License
-
-MIT License - see [LICENSE](LICENSE) for details.
 
 ---
 
