@@ -1,292 +1,270 @@
-# SARATECH Arduino Robotics Library v1.4.7
+# saratech_op
 
-[![Arduino Library](https://img.shields.io/badge/Arduino-Library-blue.svg)](https://www.arduino.cc/en/Reference/Libraries)
-[![Version](https://img.shields.io/badge/Version-1.4.7-orange.svg)]()
+کتابخانه کنترل ربات فوتبالی Open-Weight دانشجو — لایه انتزاع سخت‌افزار برای STM32
 
-Complete Arduino library for **Open Weight league soccer robots**. Preserves all TDaxis12 and GTD35 commands while adding new consolidated classes with clear role separation.
+Open-Weight Student Soccer Robot Control Library — Hardware Abstraction Layer for STM32
 
----
+## نصب / Installation
 
-| Feature | Description |
-|---------|-------------|
-| **Version** | Open Weight League |
-| **Wheel Radius** | Fixed at 5 cm for all robots |
-| **Components** | Spin Back Motor PWM, GTD35, TDAxis, Servo |
-| **All TDaxis12/13 commands** | ✅ Preserved |
-| **All GTD35 commands** | ✅ Preserved |
-| **New Classes** | `amirreza_class`, `sina_class`, `sadra_class`, `king.forati_class` |
+پوشه `saratech_op` را در `Arduino/libraries/` قرار دهید.
 
----
+Place the `saratech_op` folder into `Arduino/libraries/`.
 
-## 🔗 Original Libraries (Credits)
+## ساختار فایل‌ها / File Structure
 
-All TDaxis12/13 and GTD35 commands are preserved from the original libraries:
-
-| Original Library | Author | GitHub |
-|------------------|--------|--------|
-| **TDAxis12/13** | fdmxfarhan | https://github.com/fdmxfarhan/TDAxis12 |
-| **GTD35** | fdmxfarhan | https://github.com/fdmxfarhan/GTD35 |
-
----
-
-## 🎯 Class Roles & Responsibilities
-
-| Class | Role | Key Methods |
-|-------|------|-------------|
-| **amirreza_class** | **Gyro coefficient + Basic movement** (accel, speed, velocity vector) | `move(speed, x, y, accel)`, `setTdaxisGain()`, `stop()` |
-| **sina_class** | **Rotation** with manual gyro addition + servo | `rotate(manual_gyro_add, servo_angle)`, `stop()` |
-| **sadra_class** | **Go to position** (targetX, targetY, speed) | `move(targetX, targetY, speed)`, `stop()` |
-| **king.forati_class** | **Return to start position** (speed, xtarg, ytarg) | `forati(speed, xtarg, ytarg)`, `stop()` |
-
----
-
-## 🔗 Original Libraries (Credits)
-
-All TDaxis12/13 and GTD35 commands are preserved from the original libraries:
-
-| Original Library | Author | GitHub |
-|------------------|--------|--------|
-| **TDAxis12/13** | fdmxfarhan | https://github.com/fdmxfarhan/TDAxis12 |
-| **GTD35** | fdmxfarhan | https://github.com/fdmxfarhan/GTD35 |
-
----
-
-## 🎯 Class Details
-
-### 1. `amirreza_class` — Gyro Coefficient + Basic Movement
-```cpp
-// Setup
-amirreza.begin(&gtd35Adapter, &spinBackMotor);
-
-// Basic movement with acceleration
-amirreza.move(speed_cm_s, x, y, acceleration_cm_s2);
-
-// Gyro coefficient for ALL movement functions
-amirreza.setTdaxisGain(200);  // Default 200
-
-// Stop
-amirreza.stop();
 ```
-| Method | Parameters | Description |
-|--------|------------|-------------|
-| `move()` | `speed_cm_s`, `x`, `y`, `accel` | Move with acceleration control |
-| `setTdaxisGain()` | `gain` | Gyro coefficient for ALL movement |
-| `getTdaxisGain()` | — | Get current gain |
-| `stop()` | — | Stop all movement |
-
----
-
-### 2. `sina_class` — Rotation + Servo
-```cpp
-sina.begin(&gtd35Adapter, &servoAdapter);
-
-// Rotation with manual gyro addition + servo
-sina.rotate(manual_gyro_addition, servo_angle);
-
-// Stop rotation
-sina.stop();
-```
-| Method | Parameters | Description |
-|--------|------------|-------------|
-| `rotate()` | `manual_gyro_add` (deg), `servo_angle` (45-135°) | Rotate + servo |
-| `stop()` | — | Stop rotation |
-
----
-
-### 3. `sadra_class` — Go to Position
-```cpp
-sadra.begin(&gtd35Adapter, &amirreza);
-
-// Go to position (targetX, targetY in cm, speed in cm/s)
-sadra.move(targetX_cm, targetY_cm, speed_cm_s);
-
-// Check if moving
-sadra.isMoving();
-
-// Stop
-sadra.stop();
+saratech_op/
+│
+├── src/
+│   ├── saratech_op.h          # سربرگ اصلی / Main header
+│   ├── saratech_op.cpp        # پیاده‌سازی اصلی / Main implementation
+│   │
+│   ├── GTD35_Custom/          # GTD35 motor driver library ( untouched )
+│   │   ├── GTD35.h
+│   │   └── GTD35.cpp
+│   │
+│   ├── TDAxis12/              # IMU library ( untouched )
+│   │   ├── TDAxis12.h
+│   │   └── TDAxis12.cpp
+│   │
+│   └── STM32_ISR_Servo/       # Servo library ( untouched )
+│       ├── STM32_ISR_Servo.h
+│       ├── STM32_ISR_Servo.hpp
+│       ├── STM32_ISR_Servo_Impl.h
+│       ├── STM32_ISR_Servo_Debug.h
+│       └── STM32_FastTimerInterrupt.h
+│
+├── examples/
+│   ├── Basic_Control/         # Example 1: basic robot control
+│   │   └── Basic_Control.ino
+│   └── Complete_Reference/    # Example 2: full API reference
+│       └── Complete_Reference.ino
+│
+├── Pinout.txt                 # Complete pinout reference
+├── README.md                  # This file
+└── TEST_REPORT.md             # Verification report
 ```
 
----
+## وابستگی‌ها / Dependencies
 
-### 4. `king.forati_class` — Return to Start
+تمام کتابخانه‌های ضروری داخل پوشه `src/` قرار دارند و نیازی به نصب جداگانه نیست.
+
+All required libraries are included inside `src/` — no separate installation needed.
+
+| کتابخانه / Library | منبع / Source | نسخه / Version |
+|---|---|---|
+| GTD35_Custom | `src/GTD35_Custom/` | 1.0.0 (original) |
+| TDAxis12 | `src/TDAxis12/` | — (original) |
+| STM32_ISR_Servo | `src/STM32_ISR_Servo/` | 1.1.0 (Khoi Hoang, MIT) |
+| Adafruit_GFX | `src/Adafruit_GFX/` | — (original) |
+| Adafruit_SH1106_STM32 | `src/Adafruit_SH1106_STM32/` | — (original) |
+
+## پین‌های سخت‌افزار / Hardware Pins
+
+| عملکرد / Function | پین / Pin | نوع / Type |
+|---|---|---|
+| GTD35 UART TX | PA9 | OUTPUT |
+| GTD35 UART RX | PA10 | INPUT |
+| IMU I2C SCL | PB10 | OUTPUT |
+| IMU I2C SDA | PB11 | INPUT |
+| Bottom sensor | PA1 | INPUT ANALOG |
+| Right sensor | PA2 | INPUT ANALOG |
+| Left sensor | PA3 | INPUT ANALOG |
+| Front LDR | PA5 | INPUT ANALOG |
+| Right LDR | PA6 | INPUT ANALOG |
+| Back LDR | PA7 | INPUT ANALOG |
+| Left LDR | PB0 | INPUT ANALOG |
+| Kicker detect | PA4 | INPUT (active-LOW) |
+| Shooter trigger | PC13 | OUTPUT (active-HIGH) |
+| Shooter servo | PA15 | PWM (ISR) |
+| Spinback motor | PB5 | PWM |
+| OLED SH1106 SDA | PB11 | I2C2 |
+| OLED SH1106 SCL | PB10 | I2C2 |
+
+## هندسه چرخ‌ها / Wheel Geometry
+
+| پارامتر / Parameter | مقدار / Value | واحد / Unit | وضعیت / Status |
+|---|---|---|---|
+| قطر چرخ / Wheel diameter | 5.0 | cm | ✅ تأیید شده / confirmed |
+| شعاع چرخ / Wheel radius | 2.5 | cm | ✅ محاسبه شده / calculated |
+| محیط چرخ / Wheel circumference | 15.708 | cm | ✅ محاسبه شده / calculated |
+| Wheelbase (جلو-عقب) / فاصله محور | 16.0 | cm | ⚠️ تقریبی / approximate |
+| Track width (چپ-راست) / فاصله محور | 16.0 | cm | ⚠️ تقریبی / approximate |
+
+> ⚠️ Wheelbase و track width نیاز به اندازه‌گیری مکانیکی دارند.
+> Wheelbase and track width require mechanical measurement.
+
+## راه‌اندازی سریع / Quick Start
+
 ```cpp
-king.begin(&amirreza);
-
-// Return to position
-king.forati(speed_cm_s, xtarg_cm, ytarg_cm);
-
-// Stop
-king.stop();
-```
-
----
-
-## 🚀 Quick Start
-
-```cpp
-#include <saratech.h>
-
-TwoWire i2c2(2);
+#include <saratech_op.h>
 
 void setup() {
-    Serial.begin(115200);
-    
-    // Initialize with GTD35 UART on Serial1
-    saratechBeginGTD35(&i2c2, 0x10, Serial1, -1, HIGH, 115200);
+    saratech.begin();
+    saratech.setWheelDiameter(5.0);
+    saratech.setTDAxis(200);
+    saratech.setLDRThreshold(300);
 }
 
 void loop() {
-    aghaparsa();
-    
-    // 1. amirreza: Basic movement with acceleration
-    amirreza.move(10, 90, 0, 5);  // 10 cm/s right, 5 cm/s² accel
-    
-    // 2. sadra: Go to position
-    sadra.move(90, 120, 15);  // Go to (90,120) at 15 cm/s
-    
-    // 3. king: Return to start
-    king.forati(15, 0, 0);  // Return to origin at 15 cm/s
-    
-    // 4. sina: Rotation + servo
-    sina.rotate(5.0, 45);  // Add 5° to gyro, servo to 45°
-    
-    // Gyro coefficient for ALL movement
-    amirreza.setTdaxisGain(200);
+    saratech.updateSensors();
+
+    if (saratech.getLDRFront()) {
+        saratech.move(80.0, 40.0, 0.0);
+    } else if (saratech.getLDRRight()) {
+        saratech.move(80.0, 40.0, 90.0);
+    } else if (saratech.getLDRLeft()) {
+        saratech.move(80.0, 40.0, -90.0);
+    } else {
+        saratech.stopMotors();
+    }
+
+    saratech.updateTXAXISCompensation();
 }
 ```
 
----
+## مرجع API / API Reference
 
-## 📚 API Reference
-
-### `amirreza_class` — Gyro Coefficient + Basic Movement
+### راه‌اندازی / Initialization
 ```cpp
-void move(float speed_cm_s, float x, float y, float acceleration_cm_s2 = 0);
-void stop();
-void setTdaxisGain(float gain);      // Gyro coefficient for ALL movement
-float getTdaxisGain() const;
-```
-| Parameter | Unit | Description |
-|-----------|------|-------------|
-| `speed_cm_s` | cm/s | Linear speed (max 30) |
-| `x, y` | — | Direction vector (normalized) |
-| `acceleration` | cm/s² | Acceleration limit (0=unlimited) |
-
----
-
-### `sina_class` — Rotation + Servo
-```cpp
-void rotate(float manual_gyro_addition, float servo_angle);
-void stop();
-```
-| Parameter | Unit | Description |
-|-----------|------|-------------|
-| `manual_gyro_addition` | deg | Added to gyro BEFORE coefficient |
-| `servo_angle` | deg | Servo angle (45=left, 90=center, 135=right) |
-
----
-
-### `sadra_class` — Go to Position
-```cpp
-bool move(int targetX_cm, int targetY_cm, int speed_cm_s);
-void stop();
+saratech.begin();
+saratech.begin(motorCfg, sensorCfg, shooterCfg, motionCfg);
 ```
 
----
-
-### `king.forati_class` — Return to Start
+### هندسه چرخ‌ها / Wheel Geometry
 ```cpp
-void forati(int speed_cm_s, int xtarg_cm, int ytarg_cm);
-void stop();
+saratech.setWheelDiameter(5.0);   // قطر چرخ (cm) / Wheel diameter (cm)
+saratech.setWheelRadius(2.5);     // شعاع چرخ (cm) / Wheel radius (cm)
+saratech.setWheelBase(16.0);      // فاصله محور جلو-عقب (cm) / Front-rear wheelbase
+saratech.setTrackWidth(16.0);     // فاصله محور چپ-راست (cm) / Left-right track width
 ```
 
----
-
-## 🔧 Configuration
-
+### محدودیت‌های حرکت / Motion Limits
 ```cpp
-RobotState& state = RobotState::instance();
-
-// Motor
-state.config.maxSpeedCmS = 30.0f;
-state.config.maxMotorCmd = 32767;  // GTD35 UART mode
-state.config.yawGainBase = 300.0f;
-
-// Field (cm)
-state.config.fieldWidth = 180.0f;
-state.config.fieldLength = 240.0f;
-state.config.arrivalTolerance = 5.0f;
-
-// Wheel radius: FIXED at 5 cm
-#define WHEEL_RADIUS_CM 5.0f
+saratech.setMaxSpeed(200.0);      // cm/s / سرعت حداکثری / Max speed
+saratech.setMaxAccel(100.0);      // cm/s² / شتاب حداکثری / Max acceleration
+saratech.setMaxMotorRPM(1000.0);  // RPM / دور حداکثری موتور / Max motor RPM
 ```
 
----
-
-## 🚀 Quick Start
-
+### TDAXIS / TXAXIS
 ```cpp
-#include <saratech.h>
-
-TwoWire i2c2(2);
-
-void setup() {
-    Serial.begin(115200);
-    saratechBeginGTD35(&i2c2, 0x10, Serial1, -1, HIGH, 115200);
-}
-
-void loop() {
-    aghaparsa();  // Updates TDaxis, distances, ball, position
-    
-    // Basic movement with acceleration
-    amirreza.move(10, 90, 0, 5);  // 10 cm/s right, 5 cm/s² accel
-    
-    // Go to position
-    sadra.move(90, 120, 15);  // Go to (90,120) at 15 cm/s
-    
-    // Return to start
-    king.forati(15, 0, 0);  // Return to origin
-    
-    // Rotation + servo
-    sina.rotate(5.0, 45);  // Add 5° to gyro, servo 45°
-    
-    // Gyro coefficient for ALL movement
-    amirreza.setTdaxisGain(200);
-}
+saratech.setTDAxis(200);                      // ضریb TDAXIS (0-512) / TDAXIS coeff (0-512)
+saratech.setTXAxisGain(1.0f);                 // ضریb تقویت / Gain
+saratech.setTXAxisAngle(4000);                // زاویه پیش‌فرض / Default angle
+saratech.updateTXAXISCompensation();          // jبران‌سازی / Compensation
+saratech.rotateYaw(5.0);                      // چرخش عمودی / Yaw rotation
+saratech.resetYaw();                          // بازیابی مرجع / Reset reference
 ```
 
----
-
-## 🔧 Hardware & Sensor Update
-
+### توابع پنج‌گانه اصلی / Five Main Functions
 ```cpp
-void loop() {
-    aghaparsa();  // Updates TDaxis (yaw + ball)
-    
-    // Your logic here
-}
+// 1. حرکت با واحدهای فیزیکی / Move with physical units
+saratech.move(speed_cm_s, accel_cm_s2, direction_deg);
+
+// 2. حرکت مختصاتی / Coordinate-based movement
+bool reached = saratech.goTo(targetX_cm, targetY_cm, speed_cm_s);
+
+// 3. جبران‌سازی TXAXIS / TXAXIS compensation
+saratech.updateTXAXISCompensation();
+
+// 4A. کالیبراسیون TDAXIS / TDAXIS calibration
+saratech.setTDAxis(coefficient);  // 0-512
+
+// 4B. چرخش عمودی / Yaw rotation
+saratech.rotateYaw(angleDeg);
+saratech.resetYaw();
+
+// 4C. شوتر / Shooter
+saratech.shoot(servoAngle_deg, spinBackSpeed);
+
+// 5. روش منحنی / Curved approach
+float angle = saratech.shift(robotX, robotY, ballX, ballY, shiftCoeff);
 ```
 
-**Updates via `aghaparsa()`:** TDaxis12/13 yaw (I²C).
+### سنسورها / Sensors
+```cpp
+saratech.updateSensors();       // همه / All
+saratech.updateIMU();           // ژیروسکوپ / Gyroscope
+saratech.updateLDR();           // سنسورهای نوری / Photodiodes
+saratech.updateAnalogSensors(); // سنسورهای آنالوگ / Analog sensors
 
----
+bool front = saratech.getLDRFront();
+bool right = saratech.getLDRRight();
+bool back  = saratech.getLDRBack();
+bool left  = saratech.getLDRLeft();
+```
 
-## 🔗 Original Libraries
+### تنظیمات سنسور / Sensor Config
+```cpp
+saratech.setLDRThreshold(300);
+saratech.setLDRBaseline(idx, value);
+```
 
-| Library | Author | GitHub |
-|---------|--------|--------|
-| **TDAxis12/13** | fdmxfarhan | https://github.com/fdmxfarhan/TDAxis12 |
-| **GTD35** | fdmxfarhan | https://github.com/fdmxfarhan/GTD35 |
+### کنترل مستقیم / Direct Control
+```cpp
+saratech.setMotorSpeeds(fl, fr, rr, rl);          // signed int16
+saratech.setMotorSpeedsRPM(fl_rpm, fr_rpm, rr_rpm, rl_rpm);
+saratech.stopMotors();
+saratech.setShooterServoAngle(deg);
+saratech.setSpinbackSpeed(pwm);
+```
 
----
+### دسترسی به سخت‌افزار / Hardware Access
+```cpp
+saratech.gtd35();       // GTD35 object
+saratech.imu();         // TDAxis12 object
+saratech.servoCtrl();   // STM32_ISR_Servo object
+saratech.display();     // Adafruit_SH1106 object (OLED)
+```
 
-## 📦 Installation
+## سیستم مختصات / Coordinate System
 
-1. Download as ZIP
-2. Arduino IDE: **Sketch → Include Library → Add .ZIP Library**
-3. Select `saratech.zip`
+- **محور X مثبت**: راست ربات / Robot right
+- **محور Y مثبت**: جلوی ربات / Robot forward
+- **زاویه 0°**: به سمت جلو / Forward
+- **زاویه 90°**: به سمت راست / Right
+- **زاویه -90°**: به سمت چپ / Left
+- **واحدها**: cm, cm/s, cm/s², degree
 
----
+## واحد‌ها / Units
 
-**Made for IranOpen and RoboCup Open Weight Football Robotics** ⚽🤖
+| مقدار / Quantity | واحد / Unit | محدوده / Range |
+|---|---|---|
+| سرعت خطی / Linear speed | cm/s | ±maxSpeed |
+| شتاب / Acceleration | cm/s² | 0 to maxAccel |
+| زاویه / Angle | degree | -180 to 180 |
+| موقعیت / Position | cm | آزاد / Any |
+| ضریb TDAXIS / TDAXIS coeff | integer | 0 to 512 |
+| اسپین‌بک / Spinback speed | integer | 0 to 255 |
+| زاویه سروو / Servo angle | degree | servoMin to servoMax |
+| قطر چرخ / Wheel diameter | cm | 5.0 (confirmed) |
+
+## محدودیت‌های سخت‌افزاری / Hardware Limitations
+
+- GTD35: حداکثر 4 موتور روی یک bus
+- IMU: فقط خواندن زاویه Yaw
+- OpenMV H7 Plus: ارتباط با توپ‌یابی (در حال حاضر پیاده‌سازی نشده)
+
+## مثال‌ها / Examples
+
+- `Basic_Control` — مثال اولیه کنترل ربات
+- `Complete_Reference` — مرجع کامل تمام APIها
+
+## تست / Testing
+
+- [x] ساختار فایل‌ها / File structure
+- [x] کامپایل headfile / Header compilation
+- [ ] تست GTD35 با موتورها / Motor test
+- [ ] تست IMU / IMU test
+- [ ] تست LDR / LDR test
+- [ ] تست شوتر / Shooter test
+- [ ] تست حرکت / Movement test
+- [ ] تست TDAXIS/TXAXIS / Compensation test
+
+## منبع کتابخانه‌ها / Library Sources
+
+| کتابخانه / Library | منبع / Source | مجوز / License |
+|---|---|---|
+| GTD35_Custom | پروژه / Project | — |
+| TDAxis12 | پروژه / Project | — |
+| STM32_ISR_Servo | khoih-prog (GitHub) | MIT |
